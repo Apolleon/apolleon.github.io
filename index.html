@@ -41,22 +41,26 @@
       }
       #greeting {
         position: absolute;
-        top: 10%;
+        top: 20px;
+        line-height: 45px;
         font-size: 2.5em;
-        font-weight: bold;
-        color: gold;
-        text-shadow: 0 0 20px #ff0000, 0 0 40px #ff9900;
-        animation: glow 3s ease-in-out infinite alternate;
+        font-weight: 500;
+        color: rgb(255, 238, 0);
+        animation: neonPulse 1.5s ease-in-out infinite alternate;
         z-index: 10;
         pointer-events: none;
+        text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e7f523, 0 0 40px #e7f523, 0 0 50px #e7f523,
+          0 0 70px #e7f523, 0 0 90px #e7f523;
         text-align: center;
       }
-      @keyframes glow {
+      @keyframes neonPulse {
         from {
-          text-shadow: 0 0 15px #ff0000, 0 0 30px #ff9900;
+          text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e7f523, 0 0 40px #e7f523, 0 0 50px #e7f523,
+            0 0 60px #e7f523, 0 0 70px #e7f523;
         }
         to {
-          text-shadow: 0 0 30px #ff0000, 0 0 60px #ff9900;
+          text-shadow: 0 0 20px #fff, 0 0 40px #fff, 0 0 60px #e7f523, 0 0 80px #e7f523, 0 0 100px #e7f523,
+            0 0 120px #e7f523, 0 0 140px #e7f523;
         }
       }
       #play-btn {
@@ -79,7 +83,7 @@
   </head>
   <body>
     <div id="canvas-container"></div>
-    <h1 id="greeting">С Новым<br />2026 Годом!</h1>
+    <span id="greeting"> Пусть новый год будет полон чудес! С любовью, семья Семеновых</span>
     <button id="play-btn">▶ Запустить магию</button>
 
     <audio id="music" loop>
@@ -91,20 +95,19 @@
 
     <script>
       const container = document.getElementById("canvas-container");
+
       const app = new PIXI.Application({
-        width: window.innerWidth,
-        height: window.innerHeight,
+        resizeTo: window.document.body,
         backgroundAlpha: 0,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
         autoDensity: true,
       });
+
       container.appendChild(app.view);
 
       // Фон: уютная комната с елкой у окна и камином
-      const background = PIXI.Sprite.from(
-        "https://thumbs.dreamstime.com/b/cozy-christmas-living-room-decorated-tree-glowing-garlands-soft-snow-falling-outside-window-cozy-christmas-living-room-395201212.jpg"
-      );
+      const background = PIXI.Sprite.from("bg.jpg");
       background.anchor.set(0.5);
       background.x = app.screen.width / 2;
       background.y = app.screen.height / 2;
@@ -112,70 +115,103 @@
       background.height = app.screen.height;
       app.stage.addChild(background);
 
-      // Золотые круглые игрушки
-      const ornamentUrls = [
-        "https://static.vecteezy.com/system/resources/previews/021/275/086/non_2x/gold-christmas-ball-isolated-on-a-transparent-background-png.png",
-        "https://img.freepik.com/premium-psd/golden-christmas-ball-new-year-decoration-isolated-transparent-background_728565-1344.jpg",
-        "https://p7.hiclipart.com/preview/292/723/633/christmas-ornament-gold-clip-art-christmas-balls-transparent-png.jpg",
-        "https://png.pngtree.com/png-vector/20251219/ourlarge/pngtree-luxury-golden-christmas-ball-ornament-png-image_18283368.webp",
-        "https://www.clipartmax.com/png/middle/18-182075_transparent-gold-christmas-balls-decor-png-picture-gold-christmas-balls-png.png",
-      ];
+      const treeContainer = new PIXI.Container();
 
-      const ornaments = [];
-      const positions = [
-        { x: 0.35, y: 0.25 },
-        { x: 0.65, y: 0.3 },
-        { x: 0.2, y: 0.45 },
-        { x: 0.5, y: 0.5 },
-        { x: 0.8, y: 0.55 },
-        { x: 0.4, y: 0.7 },
-        { x: 0.6, y: 0.75 },
-      ];
+      // Загружаем елку
+      const tree = PIXI.Sprite.from("./tree.png");
 
-      ornamentUrls.forEach((url, i) => {
-        const ornament = PIXI.Sprite.from(url);
-        ornament.anchor.set(0.5, 0);
-        ornament.scale.set(0.15 + Math.random() * 0.1);
-        ornament.x = app.screen.width * positions[i % positions.length].x;
-        ornament.y = app.screen.height * positions[i % positions.length].y;
-        ornament.originalY = ornament.y;
-        ornament.swingPhase = Math.random() * Math.PI * 2;
-        ornament.interactive = true;
-        ornament.buttonMode = true;
+      // Ждём загрузки текстуры, чтобы получить реальные размеры
+      tree.texture.baseTexture.on("loaded", () => {
+        // Масштабируем елку по высоте экрана (или как нужно)
+        tree.height = app.screen.height * 0.8; // 80% высоты экрана
+        tree.scale.x = tree.scale.y; // сохраняем пропорции
 
-        // Плавное качание при наведении/таче
-        ornament.on("pointerover", () => {
-          ornament.swinging = true;
-        });
-        ornament.on("pointerout", () => {
-          ornament.swinging = false;
-        });
-        ornament.on("touchstart", () => {
-          ornament.swinging = true;
-        });
-        ornament.on("touchend", () => {
-          ornament.swinging = false;
-        });
-        ornament.on("touchendoutside", () => {
-          ornament.swinging = false;
-        });
+        // Центрируем елку внутри контейнера
+        tree.anchor.set(0.5, 0.5);
+        tree.x = tree.width / 2;
+        tree.y = tree.height / 2;
 
-        app.stage.addChild(ornament);
-        ornaments.push(ornament);
+        // Устанавливаем размеры контейнера равными размерам елки
+        treeContainer.width = tree.width;
+        treeContainer.height = tree.height;
+
+        // Центрируем весь контейнер на экране
+        treeContainer.x = app.screen.width / 2;
+        treeContainer.y = app.screen.height / 2;
+
+        // Устанавливаем pivot в центр (для возможного вращения/масштабирования контейнера)
+        treeContainer.pivot.set(tree.width / 2, tree.height / 2);
+
+        // Добавляем елку в контейнер
+        treeContainer.addChild(tree);
+
+        // Теперь добавляем игрушки — только после того, как известны размеры!
+        addOrnaments();
       });
 
-      // Лёгкое качание всех игрушек даже без наведения
-      app.ticker.add(() => {
-        ornaments.forEach((orn) => {
-          if (orn.swinging) {
-            orn.swingPhase += 0.08;
-            orn.rotation = Math.sin(orn.swingPhase) * 0.3; // сильное качание
-          } else {
-            orn.swingPhase += 0.02;
-            orn.rotation = Math.sin(orn.swingPhase) * 0.05; // лёгкое
-          }
+      treeContainer.addChild(tree); // Добавляем сразу, но позиционирование внутри onload
+      app.stage.addChild(treeContainer);
+
+      // Функция добавления золотых игрушек
+      function addOrnaments() {
+        const ornamentUrl = "./shape.png";
+
+        const positions = [
+          { x: 0.37, y: 0.42 },
+          { x: 0.7, y: 0.35 },
+          { x: 0.5, y: 0.2 },
+          { x: 0.68, y: 0.55 },
+          { x: 0.26, y: 0.65 },
+          { x: 0.8, y: 0.75 },
+          { x: 0.5, y: 0.6 },
+        ];
+
+        const ornaments = [];
+
+        const ornamentUrls = Array(7).fill(ornamentUrl);
+
+        ornamentUrls.forEach((url, i) => {
+          const ornament = PIXI.Sprite.from(url);
+          ornament.anchor.set(0.5, 0); // центр шара
+
+          const scale = 0.12 + Math.random() * 0.01;
+          ornament.scale.set(scale);
+
+          const pos = positions[i % positions.length];
+
+          // Позиционируем относительно размеров контейнера (которые равны елке)
+          ornament.x = treeContainer.width * pos.x;
+          ornament.y = treeContainer.height * pos.y;
+
+          ornament.swingPhase = Math.random() * Math.PI * 2;
+          ornament.swinging = false;
+
+          ornament.interactive = true;
+          ornament.cursor = "pointer";
+
+          // Качание при наведении
+          ornament.on("pointerover", () => (ornament.swinging = true));
+
+          ornament.on("tap", () => (ornament.swinging = true));
+          ornament.on("touchendoutside", () => (ornament.swinging = false));
+
+          treeContainer.addChild(ornament);
+          ornaments.push(ornament);
         });
-      });
+
+        // Анимация качания
+        app.ticker.add(() => {
+          ornaments.forEach((orn) => {
+            if (orn.swinging) {
+              orn.swingPhase += 0.1;
+              orn.rotation = Math.sin(orn.swingPhase) * 0.4;
+            } else {
+              orn.swingPhase += 0.02;
+              orn.rotation = Math.sin(orn.swingPhase) * 0.05;
+            }
+          });
+        });
+      }
 
       // Адаптация под размер экрана
       window.addEventListener("resize", () => {
@@ -194,9 +230,8 @@
       function startExperience() {
         audio.play().catch(() => {});
         btn.style.display = "none";
-        if (!snowStarted) startSnow();
       }
-
+      if (!snowStarted) startSnow();
       document.body.addEventListener("touchstart", startExperience, { once: true });
       document.body.addEventListener("click", startExperience, { once: true });
       btn.onclick = startExperience;
