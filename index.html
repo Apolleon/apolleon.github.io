@@ -40,7 +40,7 @@
         height: 100vh;
       }
       #greeting {
-        position: absolute;
+           position: absolute;
         top: 20px;
         line-height: 45px;
         font-size: 2.5em;
@@ -49,20 +49,12 @@
         animation: neonPulse 1.5s ease-in-out infinite alternate;
         z-index: 10;
         pointer-events: none;
-        text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e7f523, 0 0 40px #e7f523, 0 0 50px #e7f523,
-          0 0 70px #e7f523, 0 0 90px #e7f523;
+        text-shadow: 0 0 70px #e7f523;
         text-align: center;
+        -webkit-text-stroke-width: 1px;
+        -webkit-text-stroke-color: black;
       }
-      @keyframes neonPulse {
-        from {
-          text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e7f523, 0 0 40px #e7f523, 0 0 50px #e7f523,
-            0 0 60px #e7f523, 0 0 70px #e7f523;
-        }
-        to {
-          text-shadow: 0 0 20px #fff, 0 0 40px #fff, 0 0 60px #e7f523, 0 0 80px #e7f523, 0 0 100px #e7f523,
-            0 0 120px #e7f523, 0 0 140px #e7f523;
-        }
-      }
+  
       #play-btn {
         position: absolute;
         bottom: 30px;
